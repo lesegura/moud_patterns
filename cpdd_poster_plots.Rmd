@@ -104,7 +104,7 @@ ggsave(plot = plot_2, here("plot_1v4.jpeg"), device = ragg::agg_jpeg,,
 ```
 
 ```{r}
-data_init_year <- readxl::read_xlsx(here("data", "moud_initiation_year.xlsx"))
+data_init_year <- readxl::read_xlsx(here("data", "moud_initiation_year.xlsx"), sheet = "Sheet1")
 
 yr_lvls <- data_init_year |>
   pull(year) |>
@@ -157,6 +157,68 @@ plot_year <- wrap_plots(plot2_1, plot2_2,
 ggsave(plot = plot_year, here("plot_2.jpeg"), device = ragg::agg_jpeg,, 
        width = 8, height = 9, units = "in", dpi = 1800)
 ```
+
+
+```{r}
+data_init_year_oud <- readxl::read_xlsx(here("data", "moud_initiation_year.xlsx"), sheet = "Sheet2")
+
+yr_lvls <- data_init_year_oud |>
+  pull(year) |>
+  unique()
+
+data_init_year_oud <- data_init_year_oud |>
+  janitor::clean_names() |>
+  mutate(moud = factor(moud, levels = moud_lvls), 
+         initiation = factor(initiation, levels = period_lvls))
+
+base_plot_2 <- data_init_year_oud |>
+  ggplot(aes(x = year, y = prop,vgroup = moud, color = moud)) +
+  geom_line(linewidth = 0.8) +
+  geom_point(alpha = 1) +
+  cowplot::theme_half_open() +
+  ggsci::scale_color_jama(name = NULL, limits = moud_lvls, drop = FALSE) +
+  scale_linetype_discrete(name = NULL, limits = moud_lvls, drop = FALSE) +
+  scale_x_continuous(breaks = 2016:2020) +
+  scale_y_continuous(breaks = seq(0, 60, by = 10),
+                     expand = expansion(mult = c(0, 0.03))) +
+  coord_cartesian(ylim = c(0, 60)) +
+  facet_wrap(~initiation) +
+  labs(y = "%", x = NULL) +
+  theme(legend.position = "right",
+        legend.title = element_blank(),
+        text = element_text(family = "Times New Roman")) +
+  guides(color = guide_legend(ncol = 1), linetype = guide_legend(ncol = 1))
+
+plot2_1_oud <- base_plot_2 + 
+  filter(data_init_year_oud, initiation == "Pre-pregnancy")
+
+plot2_2_oud <- base_plot_2 +
+  filter(data_init_year_oud, initiation == "1st trimester")
+
+plot2_3_oud <- base_plot_2 +
+  filter(data_init_year_oud, initiation == "2nd trimester")
+
+plot2_4_oud <- base_plot_2 +
+  filter(data_init_year_oud, initiation == "3rd trimester")
+
+plot2_5_oud <- base_plot_2 +
+  filter(data_init_year_oud, initiation == "Postpartum")
+
+
+plot_year_oud <- wrap_plots(plot2_1_oud, plot2_2_oud,
+                        plot2_3_oud, plot2_4_oud, 
+                        plot2_5_oud, guide_area(), 
+                        ncol = 2, guides = "collect")
+
+ggsave(plot = plot_year_oud, here("plot_2_oud.jpeg"), device = ragg::agg_jpeg,, 
+       width = 8, height = 9, units = "in", dpi = 1800)
+```
+
+
+
+
+
+
 
 
 
